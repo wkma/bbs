@@ -9,6 +9,8 @@ from django.db.models.functions import TruncMonth  #按月分类
 from bs4 import BeautifulSoup  #处理html页面，xss攻击
 import os
 from test12_bbs import settings
+import random
+from utils.mypage import Pagination
 
 
 def bootstrapcs(request):
@@ -34,6 +36,11 @@ def register(request):
                 clean_data['avatar'] = file_obj
             #操作数据库进行保存
             models.UserInfo.objects.create_user(**clean_data)
+            if models.Blog.objects.exclude(site_name=username):
+                res = models.Blog.objects.create(site_name=username, site_title=username,
+                                                 site_theme=str(username) + ".css")
+                res.save()
+                models.UserInfo.objects.filter(username=username).update(blog_id=res.id)
             back_dic['url'] = '/login/'
         else:
             back_dic['code'] = 2000
@@ -67,6 +74,7 @@ def login(request):
         return JsonResponse(back_dic)
     return render(request,'login.html')
 
+
 from PIL import Image,ImageDraw,ImageFont
 """
 Image:生成图片
@@ -79,7 +87,6 @@ from io import BytesIO,StringIO
 BytesIO：临时帮你存储数据 返回的时候数据是二进制
 StringIO：临时帮你存储数据 返回的时候数据是字符串
 """
-import random
 def random_colour():
     return random.randint(0,255),random.randint(0,255),random.randint(0,255)
 def get_code(request):
@@ -130,7 +137,6 @@ def get_code(request):
     return HttpResponse(io_obj.getvalue())
 
 
-from utils.mypage import Pagination
 def home(request,*wargs):
     #查询本网站所有数据
     article_queryset = models.Article.objects.all()
@@ -185,7 +191,6 @@ def site(request, username, **kwargs):  #查找用户，然后返回
 
     #1查询当前用户所有的分类以及分类下的文章数
     category_list = models.Category.objects.filter(blog=blog).annotate(count_num=Count('article__pk')).values_list('name','count_num','pk')
-    # print(category_list)  <QuerySet [('数学建模培养', 1), ('王的分类', 2), ('python', 2), ('前端', 1)]>
     #2查询当前用户所有的标签及标签下的文章数
     tag_list = models.Tag.objects.filter(blog=blog).annotate(count_num=Count('article__pk')).values_list('name','count_num','pk')
     # print(tag_list)  <QuerySet [('王的标签', 2), ('python', 3), ('算法', 0)]>
@@ -358,7 +363,6 @@ def upload_image(request):
         file_obj = request.FILES.get('imgFile')
         #手动拼接存储文件的路径
         file_dir = os.path.join(settings.BASE_DIR,'media','article_img')
-        #优化操作 先判断当前文件夹是否存在 不存在则自动创建
         if not os.path.isdir(file_dir):
             os.mkdir(file_dir)  #创建一层目录结构  article_img
         #拼接图片的完整路径
