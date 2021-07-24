@@ -1,6 +1,7 @@
 # bbs
 多人论坛
-运行简单说明
+
+运行说明
 自动安装所有依赖项：
 
 pip install -r requirements.txt
