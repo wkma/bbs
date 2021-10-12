@@ -3,7 +3,7 @@ from django import forms
 from app01 import models
 
 
-class MyRegForm(forms.Form):
+class MyForm(forms.Form):
     username = forms.CharField(label='用户名', min_length=3, max_length=8,
                                error_messages={
                                    'required': '用户名不能为空',
