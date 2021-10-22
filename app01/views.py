@@ -360,7 +360,8 @@ def category_update(request, id):
 
 @login_required
 def category_delete(request, delete_id):
-    models.Category.objects.filter(pk=delete_id).delete()
+    category = models.Category.objects.filter(pk=delete_id)
+    category.delete()
     return redirect('/backend')
 
 
@@ -447,7 +448,8 @@ def set_avatar(request):
 
 @login_required
 def article_delete(request, delete_id):
-    models.Article.objects.filter(pk=delete_id).delete()
+    article = models.Article.objects.filter(pk=delete_id)
+    article.delete()
     return redirect('/backend/')
 
 
