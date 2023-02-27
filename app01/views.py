@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required  # 登录装饰器
 from django.db.models import Count, F  # 导入聚合函数  F查询
-from django.db.models.functions import TruncMonth  
+from django.db.models.functions import TruncMonth
 from bs4 import BeautifulSoup  # 处理html页面，xss攻击
 import os
 from test12_bbs import settings
@@ -39,8 +39,13 @@ def register(request):
                 clean_data['avatar'] = file_obj
             # 操作数据库进行保存
             models.UserInfo.objects.create_user(**clean_data)
-            if models.Blog.objects.exclude(site_name=username):
+            try:
+                models.Blog.objects.get(site_name=username)
                 res = models.Blog.objects.create(site_name=username, site_title=username,
+                                                 site_theme=str(username) + ".css")
+            except models.Blog.DoesNotExist:
+                random_str = "random"
+                res = models.Blog.objects.create(site_name=username + random_str, site_title=username + random_str,
                                                  site_theme=str(username) + ".css")
                 res.save()
                 models.UserInfo.objects.filter(username=username).update(blog_id=res.id)
